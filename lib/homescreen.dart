@@ -25,6 +25,8 @@ class _HomescreenState extends State<Homescreen> {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final TextEditingController _promptcontroller = TextEditingController();
   var msgform = GlobalKey<FormState>();
+  String? responsetext;
+  bool isget = false;
 
   Future<String?> fetchGeminiResponse(String userInput, String? path) async {
 
@@ -39,8 +41,8 @@ class _HomescreenState extends State<Homescreen> {
     }
     catch(e){
       print(e);
+      return null;
     }
-    return null;
   }
 
   Future<void> _openCamera() async {
@@ -250,6 +252,7 @@ class _HomescreenState extends State<Homescreen> {
             ),
             SizedBox(
               height: _height/5,
+              child: Text(responsetext ?? "", style: TextStyle(color: Colors.amber[600], fontSize: 15),),
             ),
             Container(
               height: _height/15,
@@ -301,18 +304,32 @@ class _HomescreenState extends State<Homescreen> {
                     InkWell(
                       onTap: () async {
                         if (msgform.currentState!.validate() && _promptcontroller.text.isNotEmpty){
-                          print(_promptcontroller.text);
-                          print(widget.image);
                           if (widget.image != null){
-                            String? text = await fetchGeminiResponse(_promptcontroller.text, widget.image);
-                            print(text);
+                            setState(() {
+                              isget = true;
+                            });
+                            responsetext = (await fetchGeminiResponse(_promptcontroller.text, widget.image))!;
+                            setState(() {
+                              isget = false;
+                            });
                           }
                           else{
-                            print("Nahi");
+                            SnackBar messagesnackbar = const SnackBar(
+                              backgroundColor: Colors.red,
+                              content: Text("Add Image", style: TextStyle(color: Color(0XFFFEE9CE)),)
+                            );
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              (messagesnackbar)
+                            );
                           }
                         }
                       },
-                      child: const Icon(
+                      child: isget
+                      ? const CircularProgressIndicator(
+                        color: Color(0XFFFEE9CE),
+                      ) 
+                      :const Icon(
                         Icons.send,
                         color: Color(0XFFFEE9CE),
                         size: 35,
