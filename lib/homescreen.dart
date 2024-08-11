@@ -1,22 +1,64 @@
+import 'dart:io';
+
+import 'package:fashion_organiser/camerascreen.dart';
 import 'package:fashion_organiser/libraryscreen.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:image_picker/image_picker.dart';
 
 class Homescreen extends StatefulWidget {
-  const Homescreen({super.key});
+  
+  String? image;
+  Homescreen({super.key, required this.image});
 
   @override
   State<Homescreen> createState() => _HomescreenState();
 }
 
 class _HomescreenState extends State<Homescreen> {
+  File? _image;
   final ImagePicker _picker = ImagePicker();
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final TextEditingController _promptcontroller = new TextEditingController();
+
+  Future<String?> fetchGeminiResponse(String userInput, String imageUrlOrBase64) async {
+    const String apiKey = "AIzaSyBdITjGKPyfRX1yIMRBsnYVq8tbCWku97s";
+
+    final model = GenerativeModel(
+      model: 'gemini-1.5-flash',
+      apiKey: apiKey,
+    );
+    String prompt = "Describe the clothes of image: $imageUrlOrBase64";
+    final response = await model.generateContent([Content.text(prompt)]);
+    print(response.text);
+    return response.text;
+  }
 
   Future<void> _openCamera() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      // Handle the selected image
-      print('Image path: ${image.path}');
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+      _uploadImage();
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_image == null) return;
+
+    try {
+      String fileName = 'images/${DateTime.now()}.png';
+      Reference storageRef = _storage.ref().child(fileName);
+      UploadTask uploadTask = storageRef.putFile(_image!);
+
+      TaskSnapshot taskSnapshot = await uploadTask;
+      String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+
+      print("Image uploaded successfully. Download URL: $downloadUrl");
+    } catch (e) {
+      print("Failed to upload image: $e");
     }
   }
 
@@ -206,10 +248,22 @@ class _HomescreenState extends State<Homescreen> {
                   SizedBox(
                     width: _width/30,
                   ),
-                  const Icon(
-                    Icons.camera_alt_sharp,
-                    color: Color(0XFFFEE9CE),
-                    size: 35,
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(
+                          builder: (context){
+                            return const Camerascreen();
+                          }
+                        )
+                      );
+                    },
+                    child: const Icon(
+                      Icons.camera_alt_sharp,
+                      color: Color(0XFFFEE9CE),
+                      size: 35,
+                    ),
                   ),
                   SizedBox(
                     width: _width/30,

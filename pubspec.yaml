@@ -28,9 +28,14 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  camera: ^0.11.0+2
   cupertino_icons: ^1.0.6
+  firebase_core: ^2.24.2
+  firebase_storage: ^11.6.0
   flutter:
     sdk: flutter
+  google_generative_ai: ^0.4.4
+  http: ^1.2.2
   image_picker: ^1.1.2
 
 dev_dependencies:
@@ -55,12 +60,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/image1.jpg
-    - assets/image2.jpg
-    - assets/image3.jpg
-    - assets/image4.jpg
-    - assets/image5.jpg
-    - assets/image6.jpg
+    - assets/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
   # For details regarding adding assets from package dependencies, see
