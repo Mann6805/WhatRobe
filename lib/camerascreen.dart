@@ -87,6 +87,20 @@ class _CamerascreenState extends State<Camerascreen> {
     final _width = MediaQuery.of(context).size.width;
     final _height = MediaQuery.of(context).size.height;
     return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: _height/10,
+        backgroundColor: const Color(0XFF071739),
+        leading: IconButton(
+          icon: const Icon( 
+            Icons.arrow_circle_left_sharp,
+            color: Color(0XFFFEE9CE),
+            size: 50,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
