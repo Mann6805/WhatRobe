@@ -6,7 +6,7 @@ import 'package:fashion_organiser/camerascreen.dart';
 import 'package:fashion_organiser/libraryscreen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:image_picker/image_picker.dart';
 
 class Homescreen extends StatefulWidget {
@@ -20,46 +20,57 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
 
-  File? _image;
+  File? _imagePath;
   final ImagePicker _picker = ImagePicker();
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final TextEditingController _promptcontroller = TextEditingController();
   var msgform = GlobalKey<FormState>();
 
-  Future<String?> fetchGeminiResponse(String userInput, String imageUrlOrBase64) async {
-    const String apiKey = "AIzaSyBdITjGKPyfRX1yIMRBsnYVq8tbCWku97s";
+  Future<String?> fetchGeminiResponse(String userInput, String? path) async {
 
-    final model = GenerativeModel(
-      model: 'gemini-1.5-flash',
-      apiKey: apiKey,
-    );
-    String prompt = "Describe the clothes of image: $imageUrlOrBase64";
-    final response = await model.generateContent([Content.text(prompt)]);
-    print(response.text);
-    return response.text;
+    final Gemini gemini = Gemini.instance;
+    final file = File(path!);
+    try{
+      final response = await gemini.textAndImage(
+        text: userInput,
+        images: [file.readAsBytesSync()],
+      );
+      return response?.content?.parts?.last.text;
+    }
+    catch(e){
+      print(e);
+    }
+    return null;
   }
 
   Future<void> _openCamera() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        _imagePath = File(pickedFile.path);
       });
       _uploadImage();
     }
   }
 
   Future<void> _uploadImage() async {
-    if (_image == null) return;
+    if (_imagePath == null) return;
 
     try {
       String fileName = 'images/${DateTime.now()}.png';
       Reference storageRef = _storage.ref().child(fileName);
-      UploadTask uploadTask = storageRef.putFile(_image!);
+      UploadTask uploadTask = storageRef.putFile(_imagePath!);
 
       TaskSnapshot taskSnapshot = await uploadTask;
       String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-
+      SnackBar messagesnackbar = const SnackBar(
+        backgroundColor: Color(0XFF071739),
+        content: Text("Image added succesfully", style: TextStyle(color: Color(0XFFFEE9CE)),)
+      );
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        (messagesnackbar)
+      );
       print("Image uploaded successfully. Download URL: $downloadUrl");
     } catch (e) {
       print("Failed to upload image: $e");
@@ -288,9 +299,17 @@ class _HomescreenState extends State<Homescreen> {
                       width: _width/30,
                     ),
                     InkWell(
-                      onTap: () {
+                      onTap: () async {
                         if (msgform.currentState!.validate() && _promptcontroller.text.isNotEmpty){
                           print(_promptcontroller.text);
+                          print(widget.image);
+                          if (widget.image != null){
+                            String? text = await fetchGeminiResponse(_promptcontroller.text, widget.image);
+                            print(text);
+                          }
+                          else{
+                            print("Nahi");
+                          }
                         }
                       },
                       child: const Icon(

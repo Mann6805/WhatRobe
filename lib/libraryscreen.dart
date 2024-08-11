@@ -17,6 +17,44 @@ class _LibraryScreenState extends State<LibraryScreen>{
     _imageUrlsFuture = getImageUrls();
   }
 
+  void _confirmDelete(BuildContext context, String path) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: const Text('Do you really want to delete this image?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); 
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); 
+              _deleteimages(context, path);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _deleteimages(BuildContext context, String path) async {
+  try {
+    await FirebaseStorage.instance.refFromURL(path).delete();
+    setState(() {
+      _imageUrlsFuture = getImageUrls();
+    });
+  } catch (e) {
+    print('Error deleting image: $e');
+  }
+}
+
   Future<List<String>> getImageUrls() async {
     List<String> imageUrls = [];
     final ListResult result = await FirebaseStorage.instance.ref('images').listAll();
@@ -53,7 +91,7 @@ class _LibraryScreenState extends State<LibraryScreen>{
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No images found.'));
+            return const Center(child: Text('No images found.', style: TextStyle(color: const Color(0XFF071739), fontSize: 30),),);
           } else {
             List<String> imagePaths = snapshot.data!;
             return Padding(
@@ -66,11 +104,14 @@ class _LibraryScreenState extends State<LibraryScreen>{
                   mainAxisSpacing: 10.0,
                 ),
                 itemBuilder: (context, index) {
-                  return Container(
-                    color: Colors.grey[300],
-                    child: Image.network(
-                      imagePaths[index],
-                      fit: BoxFit.cover,
+                  return InkWell(
+                    onTap: () => _confirmDelete(context,imagePaths[index]),
+                    child: Container(
+                      color: Colors.grey[300],
+                      child: Image.network(
+                        imagePaths[index],
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   );
                 },
