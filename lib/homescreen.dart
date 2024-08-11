@@ -14,7 +14,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class Homescreen extends StatefulWidget {
-  
   String? image;
   Homescreen({super.key, required this.image});
 
@@ -23,29 +22,32 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
-
   File? _imagePath;
   final ImagePicker _picker = ImagePicker();
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final TextEditingController _promptcontroller = TextEditingController();
   var msgform = GlobalKey<FormState>();
   String? responsetext;
-  bool isget = false;
+  bool isgetting = false;
 
   Future<String?> fetchGeminiResponse(String userInput, String? path) async {
-
     final Gemini gemini = Gemini.instance;
-    final file = File(path!);
-    try{
-      final response = await gemini.textAndImage(
-        text: userInput,
-        images: [file.readAsBytesSync()],
-      );
+    if (path == null){
+      final response = await gemini.text(userInput);
       return response?.content?.parts?.last.text;
     }
-    catch(e){
-      print(e);
-      return null;
+    else{
+      final File file = File(path);
+      try {
+        final response = await gemini.textAndImage(
+          text: userInput,
+          images: [file.readAsBytesSync()],
+        );
+        return response?.content?.parts?.last.text;
+      } catch (e) {
+        print(e);
+        return null;
+      }
     }
   }
 
@@ -70,13 +72,13 @@ class _HomescreenState extends State<Homescreen> {
       TaskSnapshot taskSnapshot = await uploadTask;
       String downloadUrl = await taskSnapshot.ref.getDownloadURL();
       SnackBar messagesnackbar = const SnackBar(
-        backgroundColor: Color(0XFF071739),
-        content: Text("Image added succesfully", style: TextStyle(color: Color(0XFFFEE9CE)),)
-      );
+          backgroundColor: Color(0XFF071739),
+          content: Text(
+            "Image added succesfully",
+            style: TextStyle(color: Color(0XFFFEE9CE)),
+          ));
       // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        (messagesnackbar)
-      );
+      ScaffoldMessenger.of(context).showSnackBar((messagesnackbar));
       print("Image uploaded successfully. Download URL: $downloadUrl");
     } catch (e) {
       print("Failed to upload image: $e");
@@ -127,17 +129,12 @@ class _HomescreenState extends State<Homescreen> {
               onTap: () async {
                 await FirebaseAuth.instance.signOut();
                 Navigator.pushAndRemoveUntil(
-                  // ignore: use_build_context_synchronously
-                  context, 
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return const SplashScreen();
-                    }
-                  ), 
-                  (route) {
-                    return false;
-                  }
-                );
+                    // ignore: use_build_context_synchronously
+                    context, MaterialPageRoute(builder: (context) {
+                  return const SplashScreen();
+                }), (route) {
+                  return false;
+                });
               },
             ),
           ],
@@ -148,14 +145,15 @@ class _HomescreenState extends State<Homescreen> {
         child: Column(
           children: [
             SizedBox(
-              height: _height/15,
+              height: _height / 15,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
-                  onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => LibraryScreen(pathname: userProvider.userId))),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          LibraryScreen(pathname: userProvider.userId))),
                   child: const Icon(
                     Icons.image,
                     color: Color(0XFFFEE9CE),
@@ -173,7 +171,7 @@ class _HomescreenState extends State<Homescreen> {
               ],
             ),
             SizedBox(
-              height: _height/20,
+              height: _height / 20,
             ),
             Container(
               height: 60,
@@ -196,7 +194,7 @@ class _HomescreenState extends State<Homescreen> {
               ),
             ),
             SizedBox(
-              height: _height/50,
+              height: _height / 50,
             ),
             Container(
               height: 60,
@@ -219,7 +217,7 @@ class _HomescreenState extends State<Homescreen> {
               ),
             ),
             SizedBox(
-              height: _height/50,
+              height: _height / 50,
             ),
             Container(
               height: 60,
@@ -242,7 +240,7 @@ class _HomescreenState extends State<Homescreen> {
               ),
             ),
             SizedBox(
-              height: _height/50,
+              height: _height / 50,
             ),
             Container(
               height: 60,
@@ -265,12 +263,15 @@ class _HomescreenState extends State<Homescreen> {
               ),
             ),
             SizedBox(
-              height: _height/5,
-              child: Text(responsetext ?? "", style: TextStyle(color: Colors.amber[600], fontSize: 15),),
+              height: _height / 5,
+              child: Text(
+                responsetext ?? "",
+                style: TextStyle(color: Colors.amber[600], fontSize: 15),
+              ),
             ),
             Container(
-              height: _height/15,
-              width: _width/1.2,
+              height: _height / 15,
+              width: _width / 1.2,
               decoration: BoxDecoration(
                 color: const Color(0xffA4B5C4),
                 borderRadius: BorderRadius.circular(10),
@@ -280,18 +281,14 @@ class _HomescreenState extends State<Homescreen> {
                 child: Row(
                   children: [
                     SizedBox(
-                      width: _width/30,
+                      width: _width / 30,
                     ),
                     InkWell(
                       onTap: () {
-                        Navigator.push(
-                          context, 
-                          MaterialPageRoute(
-                            builder: (context){
-                              return const Camerascreen();
-                            }
-                          )
-                        );
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return const Camerascreen();
+                        }));
                       },
                       child: const Icon(
                         Icons.camera_alt_sharp,
@@ -300,7 +297,7 @@ class _HomescreenState extends State<Homescreen> {
                       ),
                     ),
                     SizedBox(
-                      width: _width/30,
+                      width: _width / 30,
                     ),
                     Expanded(
                       child: TextFormField(
@@ -308,49 +305,50 @@ class _HomescreenState extends State<Homescreen> {
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                         ),
-                        style: const TextStyle(color: Color(0XFFFEE9CE),),
+                        style: const TextStyle(
+                          color: Color(0XFFFEE9CE),
+                        ),
                         cursorColor: const Color(0XFFFEE9CE),
                       ),
                     ),
                     SizedBox(
-                      width: _width/30,
+                      width: _width / 30,
                     ),
                     InkWell(
                       onTap: () async {
-                        if (msgform.currentState!.validate() && _promptcontroller.text.isNotEmpty){
-                          if (widget.image != null){
-                            setState(() {
-                              isget = true;
-                            });
-                            responsetext = (await fetchGeminiResponse(_promptcontroller.text, widget.image))!;
-                            setState(() {
-                              isget = false;
-                            });
-                          }
-                          else{
-                            SnackBar messagesnackbar = const SnackBar(
+                        if (msgform.currentState!.validate() && _promptcontroller.text.isNotEmpty) {
+                          setState(() {
+                            isgetting = true;
+                          });
+                          responsetext = (await fetchGeminiResponse(
+                              _promptcontroller.text, widget.image))!;
+                          setState(() {
+                            isgetting = false;
+                          });
+                        } else {
+                          SnackBar messagesnackbar = const SnackBar(
                               backgroundColor: Colors.red,
-                              content: Text("Add Image", style: TextStyle(color: Color(0XFFFEE9CE)),)
-                            );
-                            // ignore: use_build_context_synchronously
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              (messagesnackbar)
-                            );
-                          }
+                              content: Text(
+                                "Enter Prompt",
+                                style: TextStyle(color: Color(0XFFFEE9CE)),
+                              ));
+                          // ignore: use_build_context_synchronously
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar((messagesnackbar));
                         }
                       },
-                      child: isget
-                      ? const CircularProgressIndicator(
-                        color: Color(0XFFFEE9CE),
-                      ) 
-                      :const Icon(
-                        Icons.send,
-                        color: Color(0XFFFEE9CE),
-                        size: 35,
-                      ),
+                      child: isgetting
+                          ? const CircularProgressIndicator(
+                              color: Color(0XFFFEE9CE),
+                            )
+                          : const Icon(
+                              Icons.send,
+                              color: Color(0XFFFEE9CE),
+                              size: 35,
+                            ),
                     ),
                     SizedBox(
-                      width: _width/30,
+                      width: _width / 30,
                     ),
                   ],
                 ),
