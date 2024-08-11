@@ -4,10 +4,14 @@ import 'dart:io';
 
 import 'package:fashion_organiser/camerascreen.dart';
 import 'package:fashion_organiser/libraryscreen.dart';
+import 'package:fashion_organiser/provider/userprovider.dart';
+import 'package:fashion_organiser/splashscreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class Homescreen extends StatefulWidget {
   
@@ -45,21 +49,21 @@ class _HomescreenState extends State<Homescreen> {
     }
   }
 
-  Future<void> _openCamera() async {
+  Future<void> _openCamera(String name) async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imagePath = File(pickedFile.path);
       });
-      _uploadImage();
+      _uploadImage(name);
     }
   }
 
-  Future<void> _uploadImage() async {
+  Future<void> _uploadImage(String name) async {
     if (_imagePath == null) return;
 
     try {
-      String fileName = 'images/${DateTime.now()}.png';
+      String fileName = '${name}/${DateTime.now()}.png';
       Reference storageRef = _storage.ref().child(fileName);
       UploadTask uploadTask = storageRef.putFile(_imagePath!);
 
@@ -83,47 +87,57 @@ class _HomescreenState extends State<Homescreen> {
   Widget build(BuildContext context) {
     final _width = MediaQuery.of(context).size.width;
     final _height = MediaQuery.of(context).size.height;
+    var userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Color(0XFFFEE9CE), size: 45),
         backgroundColor: const Color(0xff071739),
       ),
       drawer: Drawer(
-        backgroundColor: Colors.green,
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color(0xff071739),
               ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    userProvider.userName,
+                    style: const TextStyle(
+                      color: Color(0XFFFEE9CE),
+                      fontSize: 24,
+                    ),
+                  ),
+                  const Text(
+                    "Welcome to our app",
+                    style: const TextStyle(
+                      color: Color(0XFFFEE9CE),
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-              },
             ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
+              onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.pushAndRemoveUntil(
+                  // ignore: use_build_context_synchronously
+                  context, 
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const SplashScreen();
+                    }
+                  ), 
+                  (route) {
+                    return false;
+                  }
+                );
               },
             ),
           ],
@@ -141,7 +155,7 @@ class _HomescreenState extends State<Homescreen> {
               children: [
                 InkWell(
                   onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => LibraryScreen())),
+                      MaterialPageRoute(builder: (context) => LibraryScreen(pathname: userProvider.userId))),
                   child: const Icon(
                     Icons.image,
                     color: Color(0XFFFEE9CE),
@@ -149,7 +163,7 @@ class _HomescreenState extends State<Homescreen> {
                   ),
                 ),
                 InkWell(
-                  onTap: () => _openCamera(),
+                  onTap: () => _openCamera(userProvider.userId),
                   child: const Icon(
                     Icons.add_box_rounded,
                     color: Color(0XFFFEE9CE),

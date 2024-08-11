@@ -1,11 +1,13 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class LibraryScreen extends StatefulWidget {
 
+  String pathname;
   @override
   _LibraryScreenState createState() => _LibraryScreenState();
-  const LibraryScreen({super.key});
+  LibraryScreen({super.key, required this.pathname});
 }
 
 class _LibraryScreenState extends State<LibraryScreen>{
@@ -17,7 +19,7 @@ class _LibraryScreenState extends State<LibraryScreen>{
     _imageUrlsFuture = getImageUrls();
   }
 
-  void _confirmDelete(BuildContext context, String path) {
+  void _confirmDelete(BuildContext context, String urlpath) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -34,7 +36,7 @@ class _LibraryScreenState extends State<LibraryScreen>{
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); 
-              _deleteimages(context, path);
+              _deleteimages(context, urlpath);
             },
             child: const Text('Delete'),
           ),
@@ -44,9 +46,9 @@ class _LibraryScreenState extends State<LibraryScreen>{
   );
 }
 
-void _deleteimages(BuildContext context, String path) async {
+void _deleteimages(BuildContext context, String urlpath) async {
   try {
-    await FirebaseStorage.instance.refFromURL(path).delete();
+    await FirebaseStorage.instance.refFromURL(urlpath).delete();
     setState(() {
       _imageUrlsFuture = getImageUrls();
     });
@@ -57,7 +59,7 @@ void _deleteimages(BuildContext context, String path) async {
 
   Future<List<String>> getImageUrls() async {
     List<String> imageUrls = [];
-    final ListResult result = await FirebaseStorage.instance.ref('images').listAll();
+    final ListResult result = await FirebaseStorage.instance.ref(widget.pathname).listAll();
     for (var ref in result.items) {
       String url = await ref.getDownloadURL();
       imageUrls.add(url);
