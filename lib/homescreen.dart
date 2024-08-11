@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:io';
 
 import 'package:fashion_organiser/camerascreen.dart';
@@ -17,10 +19,12 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
+
   File? _image;
   final ImagePicker _picker = ImagePicker();
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final TextEditingController _promptcontroller = new TextEditingController();
+  final TextEditingController _promptcontroller = TextEditingController();
+  var msgform = GlobalKey<FormState>();
 
   Future<String?> fetchGeminiResponse(String userInput, String imageUrlOrBase64) async {
     const String apiKey = "AIzaSyBdITjGKPyfRX1yIMRBsnYVq8tbCWku97s";
@@ -243,52 +247,63 @@ class _HomescreenState extends State<Homescreen> {
                 color: const Color(0xffA4B5C4),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: _width/30,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(
-                          builder: (context){
-                            return const Camerascreen();
-                          }
-                        )
-                      );
-                    },
-                    child: const Icon(
-                      Icons.camera_alt_sharp,
-                      color: Color(0XFFFEE9CE),
-                      size: 35,
+              child: Form(
+                key: msgform,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: _width/30,
                     ),
-                  ),
-                  SizedBox(
-                    width: _width/30,
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(
+                            builder: (context){
+                              return const Camerascreen();
+                            }
+                          )
+                        );
+                      },
+                      child: const Icon(
+                        Icons.camera_alt_sharp,
+                        color: Color(0XFFFEE9CE),
+                        size: 35,
                       ),
-                      style: const TextStyle(color: Color(0XFFFEE9CE),),
-                      cursorColor: const Color(0XFFFEE9CE),
                     ),
-                  ),
-                  SizedBox(
-                    width: _width/30,
-                  ),
-                  const Icon(
-                    Icons.send,
-                    color: Color(0XFFFEE9CE),
-                    size: 35,
-                  ),
-                  SizedBox(
-                    width: _width/30,
-                  ),
-                ],
+                    SizedBox(
+                      width: _width/30,
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _promptcontroller,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                        ),
+                        style: const TextStyle(color: Color(0XFFFEE9CE),),
+                        cursorColor: const Color(0XFFFEE9CE),
+                      ),
+                    ),
+                    SizedBox(
+                      width: _width/30,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        if (msgform.currentState!.validate() && _promptcontroller.text.isNotEmpty){
+                          print(_promptcontroller.text);
+                        }
+                      },
+                      child: const Icon(
+                        Icons.send,
+                        color: Color(0XFFFEE9CE),
+                        size: 35,
+                      ),
+                    ),
+                    SizedBox(
+                      width: _width/30,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

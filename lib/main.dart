@@ -1,4 +1,3 @@
-import 'package:fashion_organiser/camerascreen.dart';
 import 'package:fashion_organiser/firebase_options.dart';
 import 'package:fashion_organiser/homescreen.dart';
 import 'package:firebase_core/firebase_core.dart';

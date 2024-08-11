@@ -1,9 +1,12 @@
+// ignore_for_file: no_leading_underscores_for_local_identifiers
+
 import 'dart:io';
 
 import 'package:fashion_organiser/homescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Camerascreen extends StatefulWidget {
   const Camerascreen({super.key});
@@ -24,11 +27,24 @@ class _CamerascreenState extends State<Camerascreen> {
     _initializeCamera();
   }
 
+  Future<void> _checkPermissions() async {
+    final cameraPermission = await Permission.camera.request();
+    final galleryPermission = await Permission.photos.request();
+
+    if (cameraPermission.isDenied || galleryPermission.isDenied) {
+      // If permissions are denied, exit the app
+      print('Camera or Gallery permissions are not granted.');
+      exit(0);
+    } else {
+      _initializeCamera();
+    }
+  }
+
   void _initializeCamera() async {
     final cameras = await availableCameras();
     CameraDescription description = cameras[0];
     _controller = CameraController(description, ResolutionPreset.medium);
-    await _controller!.initialize();
+    await _controller?.initialize();
     if (!mounted) {
       return;
     }
@@ -38,7 +54,7 @@ class _CamerascreenState extends State<Camerascreen> {
   Future<void> _takePicture() async {
     if (_controller != null && _controller!.value.isInitialized) {
       try {
-         _imageFile = await _controller!.takePicture();
+        _imageFile = await _controller!.takePicture();
         setState(() {});
         print('Picture taken: ${_imageFile?.path}');
       } catch (e) {
