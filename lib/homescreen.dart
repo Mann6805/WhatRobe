@@ -278,6 +278,12 @@ class _HomescreenState extends State<Homescreen> {
   }
 
   @override
+  void dispose(){
+    super.dispose();
+    _promptcontroller.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final _width = MediaQuery.of(context).size.width;
     final _height = MediaQuery.of(context).size.height;
