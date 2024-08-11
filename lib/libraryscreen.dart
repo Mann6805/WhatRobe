@@ -19,7 +19,7 @@ class LibraryScreen extends StatelessWidget {
         toolbarHeight: _height/10,
         backgroundColor: const Color(0XFF071739),
         leading: IconButton(
-          icon: const Icon(
+          icon: const Icon( 
             Icons.arrow_circle_left_sharp,
             color: Color(0XFFFEE9CE),
             size: 50,
