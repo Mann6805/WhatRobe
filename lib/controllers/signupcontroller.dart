@@ -26,7 +26,10 @@ class SignupController {
          await db.collection("users").doc(userId.toString()).set(data);
       }
       // ignore: empty_catches
-      catch(e) { }
+      catch(e) {
+        print("Error");
+        print(e.toString());
+       }
       
 
       Navigator.pushAndRemoveUntil(
