@@ -1,4 +1,4 @@
-# fashion_organiser
+# WhatRobe
 
 A new Flutter project.
 
