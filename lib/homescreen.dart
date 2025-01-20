@@ -63,6 +63,7 @@ class _HomescreenState extends State<Homescreen> {
             padding: const EdgeInsets.all(10.0),
             child: InkWell(
               onTap: () {
+                print("Hello");
                 fetchGeminiResponse(
                     _prompts[index] + " Suggest me a cloth", null, userId);
                 setState(() {});
@@ -167,8 +168,7 @@ class _HomescreenState extends State<Homescreen> {
     return imageUrls;
   }
 
-  Future<void> fetchGeminiResponse(
-      String userInput, String? path, String userId) async {
+  Future<void> fetchGeminiResponse(String userInput, String? path, String userId) async {
     final Gemini gemini = Gemini.instance;
     List<Uint8List> images = [];
     List<String> imageUrls = await _imageUrlsFuture;
@@ -186,7 +186,6 @@ class _HomescreenState extends State<Homescreen> {
     }
 
     try {
-      print(images);
       final response = await gemini.textAndImage(
         text: userInput,
         images: images,
@@ -195,6 +194,13 @@ class _HomescreenState extends State<Homescreen> {
           userInput, response?.content?.parts?.last.text, userId);
     } catch (e) {
       print(e);
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gemini server is busy. Please try again later.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
     }
   }
 
