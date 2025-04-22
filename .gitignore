@@ -42,3 +42,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 lib/const.dart
+
+lib/firebase.dart
+firebase.json
